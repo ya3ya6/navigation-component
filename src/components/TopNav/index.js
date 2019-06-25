@@ -363,21 +363,34 @@ const TopNav = ({
     // also in challenge details page, level 3 menu shouldnt be visible    if (!path || !menuWithId[0]) return
     const { m1, m2 } = getMenuIdsFromPath(menuWithId, path)
     let forceExpand = false
+    let forceM1 = null
     let forceM2 = null
+    let forceHideLevel3_ = false
     if (path.indexOf('/challenges') > -1) {
       forceExpand = true
     }
     if (path.match(/challenges\/[0-9]+/)) {
-      setforceHideLevel3(true)
+      forceHideLevel3_ = true
       forceExpand = true
-      forceM2 = getMenuIdsFromPath(menuWithId, '/challenges').m2
-    } else {
-      setforceHideLevel3(false)
+      const { m1_, m2_ } = getMenuIdsFromPath(menuWithId, '/challenges')
+      forceM1 = m1_
+      forceM2 = m2_
     }
+    // members other than current user
+    if (path.match(/members\/.+/) && path !== '/members/' + profileHandle) {
+      forceM1 = 'community'
+      forceM2 = null
+      forceHideLevel3_ = true
+    }
+    if (path.indexOf('/settings/profile') > -1) {
+      forceM1 = 'community'
+      forceM2 = null
+    }
+    setforceHideLevel3(forceHideLevel3_)
     // expand first Level1Menu(like work/business) on login / logout.
     if ((loggedIn && profileHandle) || forceExpand) {
       setTimeout(() => {
-        if (collapsed) expandMenu(m1 || menuWithId[0].id, m2 || forceM2)
+        if (collapsed) expandMenu(m1 || forceM1 || 'community', m2 || forceM2 || null)
       })
     }
   }, [path, loggedIn, profileHandle])
